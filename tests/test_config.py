@@ -2,7 +2,8 @@
 
 import pytest
 from pydantic import ValidationError
-from soajs.config import Config, Maintenance, MaintenancePort
+
+from soajs.config import Config
 from soajs.exceptions import ConfigValidationError
 
 

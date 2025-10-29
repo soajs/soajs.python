@@ -1,8 +1,10 @@
 """HTTP client for SOAJS registry API communication."""
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
+
 import httpx
+
 from .exceptions import RegistryError
 
 
@@ -58,7 +60,7 @@ class RegistryClient:
 
     def get_registry(
         self, service_name: str, env_code: str, service_type: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Fetch registry from SOAJS gateway.
 
@@ -83,7 +85,7 @@ class RegistryClient:
 
         return self._handle_response(response)
 
-    def register_service(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def register_service(self, config: dict[str, Any]) -> dict[str, Any]:
         """
         Register service for manual deployment.
 
@@ -105,7 +107,7 @@ class RegistryClient:
 
         return self._handle_response(response)
 
-    def _handle_response(self, response: httpx.Response) -> Dict[str, Any]:
+    def _handle_response(self, response: httpx.Response) -> dict[str, Any]:
         """
         Parse and validate API response.
 

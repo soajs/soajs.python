@@ -1,15 +1,16 @@
 """Tests for registry management."""
 
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+
+from soajs.exceptions import (
+    DatabaseNotFoundError,
+    RegistryError,
+    ServiceNotFoundError,
+)
 from soajs.registry import RegistryManager
 from soajs.registry_client import RegistryClient
-from soajs.exceptions import (
-    RegistryError,
-    DatabaseNotFoundError,
-    ServiceNotFoundError,
-    ResourceNotFoundError,
-)
 
 
 @pytest.fixture

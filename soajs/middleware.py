@@ -1,10 +1,10 @@
 """HTTP middleware for SOAJS - supports ASGI and WSGI frameworks."""
 
 import json
-from typing import Any, Callable, Dict, Optional
-from .models import ContextData, ConnectResponse, Key, Application, Host, InterConnect
-from .registry import RegistryManager
+from typing import Any, Optional
 
+from .models import ConnectResponse, ContextData, Host, InterConnect, Key
+from .registry import RegistryManager
 
 # ============================================================================
 # ASGI Middleware (FastAPI, Starlette, Quart)
@@ -41,7 +41,7 @@ class SOAJSMiddleware:
 
         await self.app(scope, receive, send)
 
-    def _extract_context(self, headers: Dict[bytes, bytes]) -> Optional[ContextData]:
+    def _extract_context(self, headers: dict[bytes, bytes]) -> Optional[ContextData]:
         """
         Extract SOAJS context from request headers.
 
@@ -178,7 +178,7 @@ class SOAJSWSGIMiddleware:
 
         return self.app(environ, start_response)
 
-    def _extract_context(self, environ: Dict[str, Any]) -> Optional[ContextData]:
+    def _extract_context(self, environ: dict[str, Any]) -> Optional[ContextData]:
         """
         Extract SOAJS context from WSGI environ.
 

@@ -1,8 +1,10 @@
 """Configuration validation for SOAJS services."""
 
 import re
-from typing import Any, Dict, Optional
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from typing import Any, Optional
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from .exceptions import ConfigValidationError
 
 
@@ -56,7 +58,7 @@ class Config(BaseModel):
     request_timeout_renewal: int = Field(0, alias="requestTimeoutRenewal")
     maintenance: Maintenance
     inter_connect: Optional[list[InterConnectConfig]] = Field(None, alias="interConnect")
-    prerequisites: Optional[Dict[str, Any]] = None
+    prerequisites: Optional[dict[str, Any]] = None
 
     model_config = ConfigDict(populate_by_name=True)
 

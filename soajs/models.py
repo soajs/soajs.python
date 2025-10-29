@@ -1,7 +1,8 @@
 """Data models for SOAJS Python middleware using Pydantic."""
 
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Any, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Credentials(BaseModel):
@@ -28,7 +29,7 @@ class Database(BaseModel):
     name: str
     prefix: Optional[str] = None
     cluster: str
-    servers: List[DBHost]
+    servers: list[DBHost]
     credentials: Optional[Credentials] = None
     streaming: Optional[Any] = None
     registry_location: Optional[RegistryLocation] = Field(None, alias="registryLocation")
@@ -175,12 +176,12 @@ class Registry(BaseModel):
     name: str
     environment: str
     service_type: Optional[str] = None
-    core_dbs: Dict[str, Database] = Field(default_factory=dict, alias="coreDB")
-    tenant_meta_dbs: Dict[str, Database] = Field(default_factory=dict, alias="tenantMetaDB")
+    core_dbs: dict[str, Database] = Field(default_factory=dict, alias="coreDB")
+    tenant_meta_dbs: dict[str, Database] = Field(default_factory=dict, alias="tenantMetaDB")
     service_config: ServiceConfig = Field(alias="serviceConfig")
-    custom: Dict[str, CustomRegistry] = Field(default_factory=dict)
-    resources: Dict[str, Dict[str, Resource]] = Field(default_factory=dict)
-    services: Dict[str, Service] = Field(default_factory=dict)
+    custom: dict[str, CustomRegistry] = Field(default_factory=dict)
+    resources: dict[str, dict[str, Resource]] = Field(default_factory=dict)
+    services: dict[str, Service] = Field(default_factory=dict)
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -193,7 +194,7 @@ class TenantMain(BaseModel):
 
 class Key(BaseModel):
     """API key information."""
-    config: Dict[str, Any] = Field(default_factory=dict)
+    config: dict[str, Any] = Field(default_factory=dict)
     i_key: Optional[str] = Field(None, alias="iKey")
     e_key: Optional[str] = Field(None, alias="eKey")
 
@@ -207,8 +208,8 @@ class Application(BaseModel):
     app_id: Optional[str] = Field(None, alias="appId")
     acl: Optional[Any] = None
     acl_all_env: Optional[Any] = Field(None, alias="acl_all_env")
-    package_acl: Dict[str, Any] = Field(default_factory=dict, alias="package_acl")
-    package_acl_all_env: Dict[str, Any] = Field(default_factory=dict, alias="package_acl_all_env")
+    package_acl: dict[str, Any] = Field(default_factory=dict, alias="package_acl")
+    package_acl_all_env: dict[str, Any] = Field(default_factory=dict, alias="package_acl_all_env")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -232,7 +233,7 @@ class Urac(BaseModel):
     first_name: Optional[str] = Field(None, alias="firstName")
     last_name: Optional[str] = Field(None, alias="lastName")
     email: str
-    groups: List[str] = Field(default_factory=list)
+    groups: list[str] = Field(default_factory=list)
     social_login: Optional[Any] = Field(None, alias="socialLogin")
     tenant: Optional[Tenant] = None
     profile: Optional[Any] = None
@@ -255,7 +256,7 @@ class Host(BaseModel):
     """Host information with InterConnect."""
     host: str
     port: int
-    inter_connect: List[InterConnect] = Field(default_factory=list, alias="interConnect")
+    inter_connect: list[InterConnect] = Field(default_factory=list, alias="interConnect")
 
     model_config = ConfigDict(populate_by_name=True)
 
@@ -264,9 +265,9 @@ class ContextData(BaseModel):
     """HTTP request context data."""
     tenant: Tenant
     urac: Optional[Urac] = None
-    services_config: Dict[str, Any] = Field(default_factory=dict)
+    services_config: dict[str, Any] = Field(default_factory=dict)
     device: Optional[str] = None
-    geo: Optional[Dict[str, str]] = None
+    geo: Optional[dict[str, str]] = None
     awareness: Host
     registry: Optional[Registry] = None
 
@@ -276,6 +277,6 @@ class ContextData(BaseModel):
 class ConnectResponse(BaseModel):
     """Response from Connect function."""
     host: str
-    headers: Dict[str, Any] = Field(default_factory=dict)
+    headers: dict[str, Any] = Field(default_factory=dict)
 
     model_config = ConfigDict(populate_by_name=True)

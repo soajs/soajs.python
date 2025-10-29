@@ -1,11 +1,15 @@
 """Registry management with thread-safe access and auto-reload."""
 
 import threading
-import time
-from typing import Dict, Optional
-from .models import Registry, Database, Service, Resource
+from typing import Optional
+
+from .exceptions import (
+    DatabaseNotFoundError,
+    ResourceNotFoundError,
+    ServiceNotFoundError,
+)
+from .models import Database, Registry, Resource, Service
 from .registry_client import RegistryClient
-from .exceptions import DatabaseNotFoundError, ServiceNotFoundError, ResourceNotFoundError
 
 
 class RegistryManager:
@@ -146,7 +150,7 @@ class RegistryManager:
 
             raise DatabaseNotFoundError(f"Database not found: {name}")
 
-    def get_all_databases(self) -> Dict[str, Database]:
+    def get_all_databases(self) -> dict[str, Database]:
         """
         Get all databases (core + tenant).
 
