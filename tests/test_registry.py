@@ -174,7 +174,7 @@ def test_auto_reload_minimum_interval(mock_client, mock_registry_data):
 def test_manual_deployment_disabled(mock_client):
     """Test that manual deployment is skipped when SOAJS_DEPLOY_MANUAL is false."""
     with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "false"}):
-        manager = RegistryManager(
+        RegistryManager(
             "test-service",
             "dev",
             "service",
@@ -193,7 +193,7 @@ def test_manual_deployment_enabled(mock_client):
     with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
         mock_client.register_service.return_value = {"result": True}
 
-        manager = RegistryManager(
+        RegistryManager(
             "test-service",
             "dev",
             "service",
@@ -222,7 +222,7 @@ def test_manual_deployment_default_ip(mock_client):
     with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
         mock_client.register_service.return_value = {"result": True}
 
-        manager = RegistryManager(
+        RegistryManager(
             "test-service",
             "dev",
             "service",
@@ -284,7 +284,7 @@ def test_manual_deployment_boolean_variations(mock_client):
 
     for value in ["true", "True", "TRUE", "1", "yes", "Yes"]:
         with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": value}):
-            manager = RegistryManager(
+            RegistryManager(
                 "test-service",
                 "dev",
                 "service",
@@ -300,7 +300,7 @@ def test_manual_deployment_boolean_variations(mock_client):
 
     for value in ["false", "False", "FALSE", "0", "no", "No"]:
         with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": value}):
-            manager = RegistryManager(
+            RegistryManager(
                 "test-service",
                 "dev",
                 "service",

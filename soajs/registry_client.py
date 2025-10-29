@@ -153,7 +153,7 @@ class RegistryClient:
         """Close the HTTP client."""
         self.client.close()
 
-    def __enter__(self) -> "RegistryClient":
+    def __enter__(self) -> RegistryClient:
         """Context manager entry."""
         return self
 

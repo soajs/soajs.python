@@ -302,7 +302,7 @@ class RegistryManager:
 
             raise ResourceNotFoundError(f"Resource not found: {name}")
 
-    def __enter__(self) -> "RegistryManager":
+    def __enter__(self) -> RegistryManager:
         """Context manager entry."""
         return self
 
