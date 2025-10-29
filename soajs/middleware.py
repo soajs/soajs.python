@@ -14,7 +14,7 @@ from .registry import RegistryManager
 class SOAJSMiddleware:
     """ASGI middleware for FastAPI/Starlette/Quart."""
 
-    def __init__(self, app, registry: RegistryManager):
+    def __init__(self, app: Any, registry: RegistryManager) -> None:
         """
         Initialize ASGI middleware.
 
@@ -25,7 +25,7 @@ class SOAJSMiddleware:
         self.app = app
         self.registry = registry
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
         """ASGI application callable."""
         if scope["type"] != "http":
             await self.app(scope, receive, send)
@@ -53,8 +53,8 @@ class SOAJSMiddleware:
         """
         # Get header (case-insensitive)
         header_data = None
-        for key, value in headers.items():
-            if key.lower() == b"soajsinjectobj":
+        for header_key, value in headers.items():
+            if header_key.lower() == b"soajsinjectobj":
                 header_data = value.decode("utf-8")
                 break
 
@@ -74,8 +74,8 @@ class SOAJSMiddleware:
 
             # Reconstruct Key
             key = Key(
-                i_key=key_data.get("iKey"),
-                e_key=key_data.get("eKey"),
+                iKey=key_data.get("iKey"),
+                eKey=key_data.get("eKey"),
                 config=key_data.get("config", {}),
             )
 
@@ -101,7 +101,7 @@ class SOAJSMiddleware:
             awareness = Host(
                 host=awareness_data.get("host", ""),
                 port=awareness_data.get("port", 0),
-                inter_connect=interconnect_list,
+                interConnect=interconnect_list,
             )
 
             # Build ContextData
@@ -123,7 +123,7 @@ class SOAJSMiddleware:
             return None
 
 
-def get_soajs_context(request) -> Optional[ContextData]:
+def get_soajs_context(request: Any) -> Optional[ContextData]:
     """
     Helper to get SOAJS context from request (FastAPI/Starlette).
 
@@ -156,7 +156,7 @@ def get_soajs_context(request) -> Optional[ContextData]:
 class SOAJSWSGIMiddleware:
     """WSGI middleware for Flask/Django."""
 
-    def __init__(self, app, registry: RegistryManager):
+    def __init__(self, app: Any, registry: RegistryManager) -> None:
         """
         Initialize WSGI middleware.
 
@@ -167,7 +167,7 @@ class SOAJSWSGIMiddleware:
         self.app = app
         self.registry = registry
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ: Any, start_response: Any) -> Any:
         """WSGI application callable."""
         # Extract SOAJS context from headers
         context = self._extract_context(environ)
@@ -206,8 +206,8 @@ class SOAJSWSGIMiddleware:
             awareness_data = data.get("awareness", {})
 
             key = Key(
-                i_key=key_data.get("iKey"),
-                e_key=key_data.get("eKey"),
+                iKey=key_data.get("iKey"),
+                eKey=key_data.get("eKey"),
                 config=key_data.get("config", {}),
             )
 
@@ -229,7 +229,7 @@ class SOAJSWSGIMiddleware:
             awareness = Host(
                 host=awareness_data.get("host", ""),
                 port=awareness_data.get("port", 0),
-                inter_connect=interconnect_list,
+                interConnect=interconnect_list,
             )
 
             context = ContextData(

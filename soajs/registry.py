@@ -1,7 +1,7 @@
 """Registry management with thread-safe access and auto-reload."""
 
 import threading
-from typing import Optional
+from typing import Any, Optional
 
 from .exceptions import (
     DatabaseNotFoundError,
@@ -204,15 +204,15 @@ class RegistryManager:
 
             raise ResourceNotFoundError(f"Resource not found: {name}")
 
-    def __enter__(self):
+    def __enter__(self) -> "RegistryManager":
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Context manager exit."""
         self.stop()
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Destructor to ensure cleanup."""
         try:
             self.stop()

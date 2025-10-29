@@ -144,16 +144,17 @@ class RegistryClient:
         if not data.get("result"):
             raise RegistryError("Negative result from registry")
 
-        return data.get("data", {})
+        result: dict[str, Any] = data.get("data", {})
+        return result
 
     def close(self) -> None:
         """Close the HTTP client."""
         self.client.close()
 
-    def __enter__(self):
+    def __enter__(self) -> "RegistryClient":
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Context manager exit."""
         self.close()
