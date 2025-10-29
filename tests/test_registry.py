@@ -169,3 +169,145 @@ def test_auto_reload_minimum_interval(mock_client, mock_registry_data):
 
     # Should be clamped to 1 second minimum
     assert interval == 1.0
+
+
+def test_manual_deployment_disabled(mock_client):
+    """Test that manual deployment is skipped when SOAJS_DEPLOY_MANUAL is false."""
+    with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "false"}):
+        manager = RegistryManager(
+            "test-service",
+            "dev",
+            "service",
+            auto_reload=False,
+            service_port=8000,
+            service_group="test-group",
+            service_version="1.0.0",
+        )
+
+        # Should not have called register_service
+        mock_client.register_service.assert_not_called()
+
+
+def test_manual_deployment_enabled(mock_client):
+    """Test that manual deployment registers service when SOAJS_DEPLOY_MANUAL is true."""
+    with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
+        mock_client.register_service.return_value = {"result": True}
+
+        manager = RegistryManager(
+            "test-service",
+            "dev",
+            "service",
+            auto_reload=False,
+            service_port=8000,
+            service_group="test-group",
+            service_version="1.0.0",
+            service_ip="192.168.1.10",
+        )
+
+        # Should have called register_service with correct config
+        mock_client.register_service.assert_called_once()
+        call_args = mock_client.register_service.call_args[0][0]
+
+        assert call_args["name"] == "test-service"
+        assert call_args["group"] == "test-group"
+        assert call_args["port"] == 8000
+        assert call_args["ip"] == "192.168.1.10"
+        assert call_args["type"] == "service"
+        assert call_args["version"] == "1.0.0"
+        assert call_args["middleware"] is True
+
+
+def test_manual_deployment_default_ip(mock_client):
+    """Test that manual deployment uses default IP when not specified."""
+    with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
+        mock_client.register_service.return_value = {"result": True}
+
+        manager = RegistryManager(
+            "test-service",
+            "dev",
+            "service",
+            auto_reload=False,
+            service_port=8000,
+            service_group="test-group",
+            service_version="1.0.0",
+        )
+
+        call_args = mock_client.register_service.call_args[0][0]
+        assert call_args["ip"] == "127.0.0.1"
+
+
+def test_manual_deployment_missing_port(mock_client):
+    """Test that manual deployment fails when port is missing."""
+    with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
+        with pytest.raises(RegistryError, match="service_port is required"):
+            RegistryManager(
+                "test-service",
+                "dev",
+                "service",
+                auto_reload=False,
+                service_group="test-group",
+                service_version="1.0.0",
+            )
+
+
+def test_manual_deployment_missing_group(mock_client):
+    """Test that manual deployment fails when group is missing."""
+    with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
+        with pytest.raises(RegistryError, match="service_group is required"):
+            RegistryManager(
+                "test-service",
+                "dev",
+                "service",
+                auto_reload=False,
+                service_port=8000,
+                service_version="1.0.0",
+            )
+
+
+def test_manual_deployment_missing_version(mock_client):
+    """Test that manual deployment fails when version is missing."""
+    with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": "true"}):
+        with pytest.raises(RegistryError, match="service_version is required"):
+            RegistryManager(
+                "test-service",
+                "dev",
+                "service",
+                auto_reload=False,
+                service_port=8000,
+                service_group="test-group",
+            )
+
+
+def test_manual_deployment_boolean_variations(mock_client):
+    """Test that manual deployment handles various boolean string formats."""
+    mock_client.register_service.return_value = {"result": True}
+
+    for value in ["true", "True", "TRUE", "1", "yes", "Yes"]:
+        with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": value}):
+            manager = RegistryManager(
+                "test-service",
+                "dev",
+                "service",
+                auto_reload=False,
+                service_port=8000,
+                service_group="test-group",
+                service_version="1.0.0",
+            )
+            # Each should trigger registration
+            assert mock_client.register_service.called
+
+    mock_client.register_service.reset_mock()
+
+    for value in ["false", "False", "FALSE", "0", "no", "No"]:
+        with patch.dict("os.environ", {"SOAJS_DEPLOY_MANUAL": value}):
+            manager = RegistryManager(
+                "test-service",
+                "dev",
+                "service",
+                auto_reload=False,
+                service_port=8000,
+                service_group="test-group",
+                service_version="1.0.0",
+            )
+        # Should not trigger registration
+        assert not mock_client.register_service.called

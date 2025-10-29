@@ -1,10 +1,14 @@
 """Registry management with thread-safe access and auto-reload."""
 
+from __future__ import annotations
+
+import os
 import threading
 from typing import Any, Optional
 
 from .exceptions import (
     DatabaseNotFoundError,
+    RegistryError,
     ResourceNotFoundError,
     ServiceNotFoundError,
 )
@@ -21,6 +25,11 @@ class RegistryManager:
         env_code: str,
         service_type: str,
         auto_reload: bool = True,
+        service_port: Optional[int] = None,
+        service_ip: Optional[str] = None,
+        service_group: Optional[str] = None,
+        service_version: Optional[str] = None,
+        config: Optional[Any] = None,
     ):
         """
         Initialize registry manager.
@@ -28,12 +37,22 @@ class RegistryManager:
         Args:
             service_name: Name of the service
             env_code: Environment code
-            service_type: Type of service
+            service_type: Type of service (e.g., "service", "daemon")
             auto_reload: Enable automatic registry reload
+            service_port: Service port for manual deployment registration
+            service_ip: Service IP address for manual deployment registration
+            service_group: Service group for manual deployment registration
+            service_version: Service version for manual deployment registration
+            config: Full service configuration object for manual deployment
         """
         self.service_name = service_name
         self.env_code = env_code
         self.service_type = service_type
+        self.service_port = service_port
+        self.service_ip = service_ip
+        self.service_group = service_group
+        self.service_version = service_version
+        self.config = config
 
         self._lock = threading.RLock()
         self._registry: Optional[Registry] = None
@@ -44,9 +63,88 @@ class RegistryManager:
         # Initial load
         self.reload()
 
+        # Handle manual deployment registration
+        self._handle_manual_deployment()
+
         # Start auto-reload if requested
         if auto_reload:
             self._start_auto_reload()
+
+    def _handle_manual_deployment(self) -> None:
+        """
+        Handle manual deployment service registration.
+
+        Reads SOAJS_DEPLOY_MANUAL environment variable and registers the service
+        if set to "true". This matches the behavior of the Go implementation.
+
+        Raises:
+            RegistryError: If manual deployment is enabled but registration fails
+        """
+        deploy_manual_str = os.getenv("SOAJS_DEPLOY_MANUAL", "false")
+
+        # Parse boolean value (case-insensitive)
+        deploy_manual = deploy_manual_str.lower() in ("true", "1", "yes")
+
+        if not deploy_manual:
+            return
+
+        # Build registration configuration
+        service_ip = self.service_ip or "127.0.0.1"
+
+        if not self.service_port:
+            raise RegistryError(
+                "service_port is required when SOAJS_DEPLOY_MANUAL is true"
+            )
+
+        if not self.service_group:
+            raise RegistryError(
+                "service_group is required when SOAJS_DEPLOY_MANUAL is true"
+            )
+
+        if not self.service_version:
+            raise RegistryError(
+                "service_version is required when SOAJS_DEPLOY_MANUAL is true"
+            )
+
+        # Build registration payload
+        register_config: dict[str, Any] = {
+            "name": self.service_name,
+            "group": self.service_group,
+            "port": self.service_port,
+            "ip": service_ip,
+            "type": self.service_type,
+            "version": self.service_version,
+            "middleware": True,
+        }
+
+        # Add optional fields from config if provided
+        if self.config:
+            optional_fields = [
+                "subType",
+                "description",
+                "oauth",
+                "urac",
+                "urac_Profile",
+                "urac_ACL",
+                "urac_Config",
+                "urac_GroupConfig",
+                "tenant_Profile",
+                "provision_ACL",
+                "requestTimeout",
+                "requestTimeoutRenewal",
+                "extKeyRequired",
+                "maintenance",
+                "interConnect",
+            ]
+            for field in optional_fields:
+                if hasattr(self.config, field):
+                    register_config[field] = getattr(self.config, field)
+
+        # Register the service
+        try:
+            self._client.register_service(register_config)
+        except Exception as e:
+            raise RegistryError(f"Failed to register service for manual deployment: {e}") from e
 
     def reload(self) -> None:
         """

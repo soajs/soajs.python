@@ -5,6 +5,7 @@ Python implementation of the SOAJS middleware for microservices architecture. Pr
 ## Features
 
 - ✅ **Registry Management** - Thread-safe registry with auto-reload
+- ✅ **Manual Deployment Registration** - Automatic service registration for manual deployments
 - ✅ **Service Discovery** - Mesh networking and gateway fallback
 - ✅ **Multi-Framework Support** - ASGI (FastAPI, Starlette) and WSGI (Flask, Django)
 - ✅ **Type Safety** - Full type hints with Pydantic models
@@ -41,10 +42,20 @@ pip install soajs-python[dev]
 Set the required environment variables:
 
 ```bash
-export SOAJS_REGISTRY_API="localhost:5000"
-export SOAJS_ENV="dev"
-export SOAJS_DEPLOY_MANUAL="false"
+export SOAJS_REGISTRY_API="localhost:5000"  # Registry gateway address
+export SOAJS_ENV="dev"                       # Environment name
+export SOAJS_DEPLOY_MANUAL="false"           # Set to "true" for manual deployment registration
 ```
+
+**Environment Variable Details:**
+
+| Variable | Description | Values | Required |
+|----------|-------------|--------|----------|
+| `SOAJS_REGISTRY_API` | Registry gateway address (host:port) | `localhost:5000` | Yes |
+| `SOAJS_ENV` | Environment name | `dev`, `prod`, etc. | Yes |
+| `SOAJS_DEPLOY_MANUAL` | Enable manual deployment registration | `true`, `false` | No (default: `false`) |
+
+When `SOAJS_DEPLOY_MANUAL` is set to `true`, the service will automatically register itself with the SOAJS registry on startup. This is useful for manual deployments outside of container orchestration.
 
 ### FastAPI Example
 
@@ -54,10 +65,15 @@ from soajs import RegistryManager
 from soajs.middleware import SOAJSMiddleware, get_soajs_context
 
 # Initialize registry
+# For manual deployment (SOAJS_DEPLOY_MANUAL=true), include service_port, service_group, and service_version
 registry = RegistryManager(
     service_name="my-service",
     env_code="dev",
-    service_type="service"
+    service_type="service",
+    service_port=8000,           # Required for manual deployment
+    service_group="my-group",     # Required for manual deployment
+    service_version="1.0.0",      # Required for manual deployment
+    service_ip="127.0.0.1"        # Optional, defaults to 127.0.0.1
 )
 
 # Create app and add middleware
@@ -80,10 +96,15 @@ from soajs import RegistryManager
 from soajs.middleware import SOAJSWSGIMiddleware
 
 # Initialize registry
+# For manual deployment (SOAJS_DEPLOY_MANUAL=true), include service_port, service_group, and service_version
 registry = RegistryManager(
     service_name="my-service",
     env_code="dev",
-    service_type="service"
+    service_type="service",
+    service_port=5000,           # Required for manual deployment
+    service_group="my-group",     # Required for manual deployment
+    service_version="1.0.0",      # Required for manual deployment
+    service_ip="127.0.0.1"        # Optional, defaults to 127.0.0.1
 )
 
 # Create app and add middleware
@@ -107,12 +128,24 @@ Thread-safe registry management with automatic reload:
 ```python
 from soajs import RegistryManager
 
-# Initialize with auto-reload
+# Basic initialization
 registry = RegistryManager(
     service_name="my-service",
     env_code="dev",
     service_type="service",
     auto_reload=True  # Automatically reload from gateway
+)
+
+# With manual deployment registration (when SOAJS_DEPLOY_MANUAL=true)
+registry = RegistryManager(
+    service_name="my-service",
+    env_code="dev",
+    service_type="service",
+    auto_reload=True,
+    service_port=8000,           # Required for manual deployment
+    service_group="my-group",     # Required for manual deployment
+    service_version="1.0.0",      # Required for manual deployment
+    service_ip="192.168.1.10"     # Optional, defaults to 127.0.0.1
 )
 
 # Access registry data
@@ -169,6 +202,67 @@ config = Config(
         "readiness": "/heartbeat"
     }
 )
+```
+
+## Manual Deployment Registration
+
+When deploying services manually (outside of container orchestration like Kubernetes), you can enable automatic service registration with the SOAJS registry.
+
+### How It Works
+
+1. Set the `SOAJS_DEPLOY_MANUAL` environment variable to `true`
+2. Provide required service information to `RegistryManager`:
+   - `service_port` - Port the service listens on
+   - `service_group` - Service group name
+   - `service_version` - Service version (e.g., "1.0.0")
+   - `service_ip` - (Optional) Service IP address, defaults to "127.0.0.1"
+
+3. On startup, the service will automatically register with the SOAJS registry
+
+### Example
+
+```python
+import os
+from soajs import RegistryManager
+
+# Set environment variable
+os.environ["SOAJS_DEPLOY_MANUAL"] = "true"
+
+# Initialize registry with service information
+registry = RegistryManager(
+    service_name="payment-service",
+    env_code="production",
+    service_type="service",
+    service_port=8080,
+    service_group="finance",
+    service_version="2.1.0",
+    service_ip="10.0.1.100"
+)
+# Service is now registered and discoverable in the SOAJS mesh
+```
+
+### Deployment Modes
+
+| Mode | SOAJS_DEPLOY_MANUAL | Registration | Use Case |
+|------|---------------------|--------------|----------|
+| **Automatic** | `false` (default) | No registration | Container orchestration (K8s, Docker Swarm) |
+| **Manual** | `true` | Automatic registration | VM deployments, bare metal, development |
+
+### Error Handling
+
+If manual deployment is enabled but required parameters are missing, `RegistryManager` will raise a `RegistryError`:
+
+```python
+# Missing service_port - will raise RegistryError
+registry = RegistryManager(
+    service_name="my-service",
+    env_code="dev",
+    service_type="service",
+    # service_port missing!
+    service_group="my-group",
+    service_version="1.0.0"
+)
+# RegistryError: service_port is required when SOAJS_DEPLOY_MANUAL is true
 ```
 
 ## Data Models
@@ -244,6 +338,7 @@ Two modes of service-to-service communication:
 | HTTP Client | net/http | httpx |
 | Validation | Manual | Pydantic validators |
 | Middleware | Single handler | ASGI + WSGI |
+| Manual Deployment | ✅ Supported | ✅ Supported |
 
 ## Examples
 

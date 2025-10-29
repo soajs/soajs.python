@@ -1,5 +1,7 @@
 """HTTP middleware for SOAJS - supports ASGI and WSGI frameworks."""
 
+from __future__ import annotations
+
 import json
 from typing import Any, Optional
 

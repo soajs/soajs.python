@@ -1,5 +1,7 @@
 """Data models for SOAJS Python middleware using Pydantic."""
 
+from __future__ import annotations
+
 from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field

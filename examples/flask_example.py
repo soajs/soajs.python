@@ -9,11 +9,18 @@ from soajs import RegistryManager
 from soajs.middleware import SOAJSWSGIMiddleware, ServiceConnector
 
 # Initialize registry manager
+# For manual deployment (SOAJS_DEPLOY_MANUAL=true), also provide:
+# - service_port, service_group, service_version
 registry = RegistryManager(
     service_name="my-flask-service",
     env_code="dev",
     service_type="service",
     auto_reload=True,
+    # Required for manual deployment registration (when SOAJS_DEPLOY_MANUAL=true)
+    service_port=5000,
+    service_group="my-group",
+    service_version="1.0.0",
+    service_ip="127.0.0.1",  # Optional, defaults to 127.0.0.1
 )
 
 # Create Flask app
