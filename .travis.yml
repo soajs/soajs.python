@@ -1,0 +1,48 @@
+language: python
+
+python:
+  - "3.9"
+  - "3.10"
+  - "3.11"
+  - "3.12"
+
+# Enable caching for faster builds
+cache: pip
+
+# Set environment variables
+env:
+  global:
+    - SOAJS_REGISTRY_API="localhost:5000"
+    - SOAJS_ENV="dev"
+    - SOAJS_DEPLOY_MANUAL="false"
+
+# Install dependencies
+install:
+  - pip install --upgrade pip
+  - pip install -e .[dev,fastapi,flask]
+
+# Run linting and tests
+script:
+  # Run linting
+  - ruff check soajs tests
+
+  # Run type checking
+  - mypy soajs
+
+  # Run tests with coverage
+  - pytest --cov=soajs --cov-report=xml --cov-report=term tests/
+
+# Upload coverage to Codecov
+after_success:
+  - pip install codecov
+  - codecov
+
+# Notification settings
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+# Build matrix configuration
+matrix:
+  fast_finish: true
