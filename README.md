@@ -153,6 +153,10 @@ db = registry.get_database("main")
 service = registry.get_service("auth-service")
 all_dbs = registry.get_all_databases()
 
+# Access custom registries
+custom = registry.get_custom("myCustomRegistry")  # Get specific custom registry
+all_customs = registry.get_custom()  # Get all custom registries
+
 # Manual reload
 registry.reload()
 
@@ -203,6 +207,44 @@ config = Config(
     }
 )
 ```
+
+## Custom Registries
+
+SOAJS supports custom registries for storing application-specific configuration data. The `get_custom()` method allows you to retrieve custom registries with thread-safe access.
+
+### Accessing Custom Registries
+
+```python
+from soajs import RegistryManager, CustomNotFoundError
+
+registry = RegistryManager(
+    service_name="my-service",
+    env_code="dev",
+    service_type="service"
+)
+
+# Get a specific custom registry by name
+try:
+    custom = registry.get_custom("myCustom")
+    print(f"Custom registry value: {custom['value']}")
+except CustomNotFoundError:
+    print("Custom registry not found")
+
+# Get all custom registries
+try:
+    all_customs = registry.get_custom()
+    for name, custom_data in all_customs.items():
+        print(f"{name}: {custom_data}")
+except CustomNotFoundError:
+    print("No custom registries available")
+```
+
+### Custom Registry Structure
+
+Custom registries typically contain:
+- `name`: Registry identifier
+- `value`: Configuration data (can be dict, string, or any JSON-serializable type)
+- `locked`: Whether the registry is locked (optional)
 
 ## Manual Deployment Registration
 

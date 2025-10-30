@@ -8,6 +8,7 @@ Provides registry management, service discovery, and HTTP middleware for Python 
 from .config import Config
 from .exceptions import (
     ConfigValidationError,
+    CustomNotFoundError,
     RegistryError,
     ServiceNotFoundError,
 )
@@ -33,5 +34,6 @@ __all__ = [
     "Config",
     "RegistryError",
     "ConfigValidationError",
+    "CustomNotFoundError",
     "ServiceNotFoundError",
 ]

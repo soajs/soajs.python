@@ -7,6 +7,7 @@ import threading
 from typing import Any, Optional
 
 from .exceptions import (
+    CustomNotFoundError,
     DatabaseNotFoundError,
     RegistryError,
     ResourceNotFoundError,
@@ -301,6 +302,46 @@ class RegistryManager:
                     return resource_list[name]
 
             raise ResourceNotFoundError(f"Resource not found: {name}")
+
+    def get_custom(self, name: str = "") -> Any:
+        """
+        Get custom registry by name.
+
+        If name is provided, returns a specific custom registry.
+        If name is empty, returns all custom registries.
+
+        Args:
+            name: Custom registry name (optional)
+
+        Returns:
+            CustomRegistry object if name is provided,
+            dict of all custom registries if name is empty
+
+        Raises:
+            CustomNotFoundError: If custom registry not found or no custom registries exist
+
+        Example:
+            ```python
+            # Get specific custom registry
+            custom = registry.get_custom("myCustom")
+
+            # Get all custom registries
+            all_customs = registry.get_custom()
+            ```
+        """
+        with self._lock:
+            reg = self.registry
+
+            if name:
+                # Get specific custom registry
+                if name in reg.custom:
+                    return reg.custom[name]
+                raise CustomNotFoundError(f"Custom registry not found: {name}")
+
+            # Get all custom registries
+            if reg.custom:
+                return reg.custom
+            raise CustomNotFoundError("No custom registries found")
 
     def __enter__(self) -> RegistryManager:
         """Context manager entry."""

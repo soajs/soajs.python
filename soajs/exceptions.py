@@ -29,3 +29,8 @@ class DatabaseNotFoundError(SOAJSError):
 class ResourceNotFoundError(SOAJSError):
     """Raised when a requested resource is not found."""
     pass
+
+
+class CustomNotFoundError(SOAJSError):
+    """Raised when a requested custom registry is not found."""
+    pass

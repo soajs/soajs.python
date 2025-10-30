@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from soajs.exceptions import (
+    CustomNotFoundError,
     DatabaseNotFoundError,
     RegistryError,
     ServiceNotFoundError,
@@ -311,3 +312,73 @@ def test_manual_deployment_boolean_variations(mock_client):
             )
         # Should not trigger registration
         assert not mock_client.register_service.called
+
+
+def test_get_custom_specific_found(mock_client, mock_registry_data):
+    """Test getting a specific custom registry that exists."""
+    mock_registry_data["custom"] = {
+        "myCustom": {
+            "name": "myCustom",
+            "value": {"key": "value"},
+            "locked": True,
+        },
+        "other": {
+            "name": "other",
+            "value": "test",
+            "locked": False,
+        },
+    }
+
+    manager = RegistryManager("test-service", "dev", "service", auto_reload=False)
+    custom = manager.get_custom("myCustom")
+
+    assert custom["name"] == "myCustom"
+    assert custom["value"] == {"key": "value"}
+    assert custom["locked"] is True
+
+
+def test_get_custom_specific_not_found(mock_client, mock_registry_data):
+    """Test getting a specific custom registry that doesn't exist."""
+    mock_registry_data["custom"] = {
+        "other": {
+            "name": "other",
+            "value": "test",
+        }
+    }
+
+    manager = RegistryManager("test-service", "dev", "service", auto_reload=False)
+
+    with pytest.raises(CustomNotFoundError, match="Custom registry not found: missing"):
+        manager.get_custom("missing")
+
+
+def test_get_custom_all(mock_client, mock_registry_data):
+    """Test getting all custom registries."""
+    mock_registry_data["custom"] = {
+        "custom1": {
+            "name": "custom1",
+            "value": "value1",
+        },
+        "custom2": {
+            "name": "custom2",
+            "value": "value2",
+        },
+    }
+
+    manager = RegistryManager("test-service", "dev", "service", auto_reload=False)
+    all_customs = manager.get_custom()
+
+    assert "custom1" in all_customs
+    assert "custom2" in all_customs
+    assert all_customs["custom1"]["name"] == "custom1"
+    assert all_customs["custom2"]["name"] == "custom2"
+
+
+def test_get_custom_no_registries(mock_client, mock_registry_data):
+    """Test getting custom registries when none exist."""
+    mock_registry_data["custom"] = {}
+
+    manager = RegistryManager("test-service", "dev", "service", auto_reload=False)
+
+    with pytest.raises(CustomNotFoundError, match="No custom registries found"):
+        manager.get_custom()
