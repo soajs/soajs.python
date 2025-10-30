@@ -5,7 +5,7 @@ This example demonstrates how to integrate SOAJS middleware with Flask.
 """
 
 from flask import Flask, request, jsonify
-from soajs import RegistryManager
+from soajs import RegistryManager, CustomNotFoundError
 from soajs.middleware import SOAJSWSGIMiddleware, ServiceConnector
 
 # Initialize registry manager
@@ -104,6 +104,44 @@ def list_services():
                 }
             }
         )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/custom-config")
+def get_custom_config():
+    """
+    Get custom registry configuration.
+
+    This demonstrates accessing custom registry data that can be used
+    for application-specific configuration.
+
+    Query params:
+        name: Optional name of specific custom registry to retrieve
+    """
+    name = request.args.get("name")
+
+    try:
+        if name:
+            # Get specific custom registry
+            custom = registry.get_custom(name)
+            return jsonify(
+                {
+                    "name": name,
+                    "custom": custom,
+                }
+            )
+        else:
+            # Get all custom registries
+            all_customs = registry.get_custom()
+            return jsonify(
+                {
+                    "count": len(all_customs),
+                    "customs": all_customs,
+                }
+            )
+    except CustomNotFoundError as e:
+        return jsonify({"error": str(e)}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

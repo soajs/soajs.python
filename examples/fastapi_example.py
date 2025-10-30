@@ -5,7 +5,7 @@ This example demonstrates how to integrate SOAJS middleware with FastAPI.
 """
 
 from fastapi import FastAPI, Request
-from soajs import RegistryManager
+from soajs import RegistryManager, CustomNotFoundError
 from soajs.middleware import SOAJSMiddleware, get_soajs_context, ServiceConnector
 
 # Initialize registry manager
@@ -94,6 +94,38 @@ async def list_services():
                 for name, service in services.items()
             }
         }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/custom-config")
+async def get_custom_config(name: str = None):
+    """
+    Get custom registry configuration.
+
+    This demonstrates accessing custom registry data that can be used
+    for application-specific configuration.
+
+    Query params:
+        name: Optional name of specific custom registry to retrieve
+    """
+    try:
+        if name:
+            # Get specific custom registry
+            custom = registry.get_custom(name)
+            return {
+                "name": name,
+                "custom": custom,
+            }
+        else:
+            # Get all custom registries
+            all_customs = registry.get_custom()
+            return {
+                "count": len(all_customs),
+                "customs": all_customs,
+            }
+    except CustomNotFoundError as e:
+        return {"error": str(e)}
     except Exception as e:
         return {"error": str(e)}
 
