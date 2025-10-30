@@ -318,14 +318,24 @@ def test_get_custom_specific_found(mock_client, mock_registry_data):
     """Test getting a specific custom registry that exists."""
     mock_registry_data["custom"] = {
         "myCustom": {
+            "_id": "123",
             "name": "myCustom",
             "value": {"key": "value"},
             "locked": True,
+            "plugged": False,
+            "shared": True,
+            "created": "2024-01-01",
+            "author": "admin",
         },
         "other": {
+            "_id": "456",
             "name": "other",
             "value": "test",
             "locked": False,
+            "plugged": False,
+            "shared": False,
+            "created": "2024-01-01",
+            "author": "admin",
         },
     }
 
@@ -341,8 +351,14 @@ def test_get_custom_specific_not_found(mock_client, mock_registry_data):
     """Test getting a specific custom registry that doesn't exist."""
     mock_registry_data["custom"] = {
         "other": {
+            "_id": "456",
             "name": "other",
             "value": "test",
+            "locked": False,
+            "plugged": False,
+            "shared": False,
+            "created": "2024-01-01",
+            "author": "admin",
         }
     }
 
@@ -356,12 +372,24 @@ def test_get_custom_all(mock_client, mock_registry_data):
     """Test getting all custom registries."""
     mock_registry_data["custom"] = {
         "custom1": {
+            "_id": "123",
             "name": "custom1",
             "value": "value1",
+            "locked": False,
+            "plugged": False,
+            "shared": False,
+            "created": "2024-01-01",
+            "author": "admin",
         },
         "custom2": {
+            "_id": "456",
             "name": "custom2",
             "value": "value2",
+            "locked": False,
+            "plugged": False,
+            "shared": False,
+            "created": "2024-01-01",
+            "author": "admin",
         },
     }
 
