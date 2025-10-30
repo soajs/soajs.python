@@ -307,15 +307,15 @@ class RegistryManager:
         """
         Get custom registry by name.
 
-        If name is provided, returns a specific custom registry.
-        If name is empty, returns all custom registries.
+        If name is provided, returns a specific custom registry as a dictionary.
+        If name is empty, returns all custom registries as a dictionary.
 
         Args:
             name: Custom registry name (optional)
 
         Returns:
-            CustomRegistry object if name is provided,
-            dict of all custom registries if name is empty
+            Dictionary representation of custom registry if name is provided,
+            dict of all custom registries (as dicts) if name is empty
 
         Raises:
             CustomNotFoundError: If custom registry not found or no custom registries exist
@@ -335,12 +335,15 @@ class RegistryManager:
             if name:
                 # Get specific custom registry
                 if name in reg.custom:
-                    return reg.custom[name]
+                    return reg.custom[name].model_dump(by_alias=True)
                 raise CustomNotFoundError(f"Custom registry not found: {name}")
 
             # Get all custom registries
             if reg.custom:
-                return reg.custom
+                return {
+                    key: value.model_dump(by_alias=True)
+                    for key, value in reg.custom.items()
+                }
             raise CustomNotFoundError("No custom registries found")
 
     def __enter__(self) -> RegistryManager:
