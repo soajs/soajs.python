@@ -27,8 +27,9 @@ registry = RegistryManager(
 # Create FastAPI app
 app = FastAPI(title="SOAJS FastAPI Example")
 
-# Add SOAJS middleware
-app.add_middleware(SOAJSMiddleware, registry=registry)
+# Add SOAJS middleware; swagger_document serves FastAPI's OpenAPI document on
+# GET /mcp/tools so the SOAJS gateway can list these APIs as MCP tools
+app.add_middleware(SOAJSMiddleware, registry=registry, swagger_document=app.openapi)
 
 
 @app.get("/")

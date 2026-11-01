@@ -6,6 +6,8 @@ import os
 import threading
 from typing import Any, Optional
 
+from pydantic import BaseModel
+
 from .exceptions import (
     CustomNotFoundError,
     DatabaseNotFoundError,
@@ -115,7 +117,8 @@ class RegistryManager:
             "ip": service_ip,
             "type": self.service_type,
             "version": self.service_version,
-            "middleware": True,
+            # the gateway keeps a middleware service in the marketplace only when mw is set
+            "mw": True,
         }
 
         # Add optional fields from config if provided
@@ -137,9 +140,22 @@ class RegistryManager:
                 "maintenance",
                 "interConnect",
             ]
+            # the gateway expects the camelCase names: a pydantic Config is dumped by
+            # alias (its attributes are snake_case), nested models become plain JSON
+            source: dict[str, Any]
+            if isinstance(self.config, BaseModel):
+                source = self.config.model_dump(by_alias=True, exclude_none=True)
+            elif isinstance(self.config, dict):
+                source = self.config
+            else:
+                source = {
+                    field: getattr(self.config, field)
+                    for field in optional_fields
+                    if hasattr(self.config, field)
+                }
             for field in optional_fields:
-                if hasattr(self.config, field):
-                    register_config[field] = getattr(self.config, field)
+                if source.get(field) is not None:
+                    register_config[field] = source[field]
 
         # Register the service
         try:

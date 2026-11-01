@@ -7,7 +7,7 @@ name = "soajs-python"
 version = "1.0.0"
 description = "SOAJS middleware for Python microservices"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "SOAJS", email = "team@soajs.org"}
@@ -18,10 +18,10 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Framework :: FastAPI",
     "Framework :: Flask",
     "Framework :: Django",
@@ -90,7 +90,7 @@ exclude_lines = [
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
@@ -112,7 +112,7 @@ ignore = [
 "__init__.py" = ["F401"]
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_configs = true
@@ -131,5 +131,5 @@ disallow_untyped_defs = false
 
 [tool.black]
 line-length = 88
-target-version = ['py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312', 'py313']
 include = '\.pyi?$'

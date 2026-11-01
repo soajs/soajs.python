@@ -215,7 +215,8 @@ def test_manual_deployment_enabled(mock_client):
         assert call_args["ip"] == "192.168.1.10"
         assert call_args["type"] == "service"
         assert call_args["version"] == "1.0.0"
-        assert call_args["middleware"] is True
+        assert call_args["mw"] is True
+        assert "middleware" not in call_args
 
 
 def test_manual_deployment_default_ip(mock_client):

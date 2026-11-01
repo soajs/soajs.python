@@ -56,7 +56,7 @@ git commit -m "Initial commit: SOAJS Python implementation"
 git remote add origin https://github.com/soajs/soajs.python.git
 
 # Push to remote
-git push -u origin main
+git push -u origin master
 ```
 
 ### Option 2: Copy to New Location
@@ -73,14 +73,14 @@ git init
 git add .
 git commit -m "Initial commit"
 git remote add origin https://github.com/soajs/soajs.python.git
-git push -u origin main
+git push -u origin master
 ```
 
 ## Local Development Setup
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.10 or higher
 - pip
 - virtualenv (recommended)
 
@@ -243,7 +243,7 @@ ruff check --fix soajs tests
 
 The project includes GitHub Actions workflow for CI/CD:
 
-- **Runs on:** Python 3.9, 3.10, 3.11, 3.12
+- **Runs on:** Python 3.10, 3.11, 3.12, 3.13
 - **Steps:**
   1. Checkout code
   2. Install dependencies

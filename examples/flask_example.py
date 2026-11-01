@@ -27,7 +27,9 @@ registry = RegistryManager(
 app = Flask(__name__)
 
 # Add SOAJS middleware
-app.wsgi_app = SOAJSWSGIMiddleware(app.wsgi_app, registry)
+# GET /mcp/tools serves swagger.yml (swagger_filename) so the SOAJS gateway can list
+# these APIs as MCP tools
+app.wsgi_app = SOAJSWSGIMiddleware(app.wsgi_app, registry, swagger_filename="/swagger.yml")
 
 
 def get_soajs_context():

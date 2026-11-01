@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Optional
 
+from .mcp import MCPTools, SwaggerDocument, is_mcp_tools_request
 from .models import ConnectResponse, ContextData, Host, InterConnect, Key
 from .registry import RegistryManager
 
@@ -16,16 +17,33 @@ from .registry import RegistryManager
 class SOAJSMiddleware:
     """ASGI middleware for FastAPI/Starlette/Quart."""
 
-    def __init__(self, app: Any, registry: RegistryManager) -> None:
+    def __init__(
+        self,
+        app: Any,
+        registry: RegistryManager,
+        swagger_document: Optional[SwaggerDocument] = None,
+        swagger_filename: Optional[str] = None,
+    ) -> None:
         """
         Initialize ASGI middleware.
 
         Args:
             app: ASGI application
             registry: Registry manager instance
+            swagger_document: OpenAPI document for GET /mcp/tools, or a callable returning
+                it; with FastAPI: ``app.add_middleware(SOAJSMiddleware, registry=registry,
+                swagger_document=app.openapi)``
+            swagger_filename: Swagger / OpenAPI file used when there is no swagger_document
+                (default /swagger.yml)
         """
         self.app = app
         self.registry = registry
+        self.mcp_tools = MCPTools(
+            registry.service_name,
+            registry.service_version,
+            swagger_document,
+            swagger_filename,
+        )
 
     async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
         """ASGI application callable."""
@@ -35,6 +53,25 @@ class SOAJSMiddleware:
 
         # Extract SOAJS context from headers
         headers = dict(scope.get("headers", []))
+
+        through_gateway = any(key.lower() == b"soajsinjectobj" for key in headers)
+        if is_mcp_tools_request(
+            scope.get("method", ""), scope.get("path", ""), through_gateway
+        ):
+            body = self.mcp_tools.response_body()
+            await send(
+                {
+                    "type": "http.response.start",
+                    "status": 200,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(body)).encode("ascii")),
+                    ],
+                }
+            )
+            await send({"type": "http.response.body", "body": body})
+            return
+
         context_data = self._extract_context(headers)
 
         if context_data:
@@ -147,7 +184,8 @@ def get_soajs_context(request: Any) -> Optional[ContextData]:
                 return {"tenant": context.tenant.code}
         ```
     """
-    return getattr(request.scope, "soajs", None) if hasattr(request, "scope") else None
+    scope = getattr(request, "scope", None)
+    return scope.get("soajs") if isinstance(scope, dict) else None
 
 
 # ============================================================================
@@ -158,19 +196,50 @@ def get_soajs_context(request: Any) -> Optional[ContextData]:
 class SOAJSWSGIMiddleware:
     """WSGI middleware for Flask/Django."""
 
-    def __init__(self, app: Any, registry: RegistryManager) -> None:
+    def __init__(
+        self,
+        app: Any,
+        registry: RegistryManager,
+        swagger_document: Optional[SwaggerDocument] = None,
+        swagger_filename: Optional[str] = None,
+    ) -> None:
         """
         Initialize WSGI middleware.
 
         Args:
             app: WSGI application
             registry: Registry manager instance
+            swagger_document: Swagger / OpenAPI document for GET /mcp/tools, or a callable
+                returning it
+            swagger_filename: Swagger / OpenAPI file used when there is no swagger_document
+                (default /swagger.yml)
         """
         self.app = app
         self.registry = registry
+        self.mcp_tools = MCPTools(
+            registry.service_name,
+            registry.service_version,
+            swagger_document,
+            swagger_filename,
+        )
 
     def __call__(self, environ: Any, start_response: Any) -> Any:
         """WSGI application callable."""
+        if is_mcp_tools_request(
+            environ.get("REQUEST_METHOD", ""),
+            environ.get("PATH_INFO", ""),
+            bool(environ.get("HTTP_SOAJSINJECTOBJ")),
+        ):
+            body = self.mcp_tools.response_body()
+            start_response(
+                "200 OK",
+                [
+                    ("Content-Type", "application/json"),
+                    ("Content-Length", str(len(body))),
+                ],
+            )
+            return [body]
+
         # Extract SOAJS context from headers
         context = self._extract_context(environ)
 
