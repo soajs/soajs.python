@@ -56,7 +56,7 @@ git commit -m "Initial commit: SOAJS Python implementation"
 git remote add origin https://github.com/soajs/soajs.python.git
 
 # Push to remote
-git push -u origin main
+git push -u origin master
 ```
 
 ### Option 2: Copy to New Location
@@ -73,7 +73,7 @@ git init
 git add .
 git commit -m "Initial commit"
 git remote add origin https://github.com/soajs/soajs.python.git
-git push -u origin main
+git push -u origin master
 ```
 
 ## Local Development Setup
