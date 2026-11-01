@@ -78,7 +78,7 @@ registry = RegistryManager(
 
 # Create app and add middleware
 app = FastAPI()
-app.add_middleware(SOAJSMiddleware, registry=registry)
+app.add_middleware(SOAJSMiddleware, registry=registry, swagger_document=app.openapi)
 
 @app.get("/")
 async def handler(request: Request):
@@ -245,6 +245,28 @@ Custom registries typically contain:
 - `name`: Registry identifier
 - `value`: Configuration data (can be dict, string, or any JSON-serializable type)
 - `locked`: Whether the registry is locked (optional)
+
+## MCP Tools (GET /mcp/tools)
+
+The SOAJS gateway can list a service's APIs as MCP tools for AI agents, filtered by each
+tenant's package and each user's ACL. A service built with this middleware describes its APIs
+with its Swagger 2.0 or OpenAPI 3 document; the middleware serves it on `GET /mcp/tools` and the
+gateway turns it into tools.
+
+```python
+# FastAPI: its own OpenAPI document
+app.add_middleware(SOAJSMiddleware, registry=registry, swagger_document=app.openapi)
+
+# Flask / Django: a file, relative to the folder the service runs from (default /swagger.yml)
+app.wsgi_app = SOAJSWSGIMiddleware(app.wsgi_app, registry, swagger_filename="/swagger.yml")
+```
+
+- `swagger_document` (a dict, or a callable returning one) wins over `swagger_filename`.
+- A `.json` file is sent parsed, any other file (YAML) as text.
+- No document, or an invalid JSON file: the answer has `"tools": []`, the service has no tools.
+- Only the gateway's own call is answered. A client request to `/<service>/mcp/tools` comes
+  through the gateway with the `soajsinjectobj` header and goes to your app like any other
+  request.
 
 ## Manual Deployment Registration
 
