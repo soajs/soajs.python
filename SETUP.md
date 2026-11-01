@@ -80,7 +80,7 @@ git push -u origin main
 
 ### Prerequisites
 
-- Python 3.9 or higher
+- Python 3.10 or higher
 - pip
 - virtualenv (recommended)
 
@@ -243,7 +243,7 @@ ruff check --fix soajs tests
 
 The project includes GitHub Actions workflow for CI/CD:
 
-- **Runs on:** Python 3.9, 3.10, 3.11, 3.12
+- **Runs on:** Python 3.10, 3.11, 3.12, 3.13
 - **Steps:**
   1. Checkout code
   2. Install dependencies

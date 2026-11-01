@@ -9,7 +9,7 @@ This document describes the CI/CD setup for SOAJS Python.
 **Configuration:** `.travis.yml`
 
 #### Features
-- Tests on Python 3.9, 3.10, 3.11, 3.12
+- Tests on Python 3.10, 3.11, 3.12, 3.13
 - Runs linting (ruff) and type checking (mypy)
 - Executes test suite with coverage
 - Uploads coverage to Codecov
@@ -35,7 +35,7 @@ This document describes the CI/CD setup for SOAJS Python.
 #### Build Matrix
 
 The Travis CI configuration tests across:
-- **Python versions:** 3.9, 3.10, 3.11, 3.12
+- **Python versions:** 3.10, 3.11, 3.12, 3.13
 - **Steps:**
   1. Install dependencies
   2. Run ruff linter
@@ -66,7 +66,7 @@ Send Notifications
 **Configuration:** `.github/workflows/test.yml`
 
 #### Features
-- Tests on Python 3.9, 3.10, 3.11, 3.12
+- Tests on Python 3.10, 3.11, 3.12, 3.13
 - Runs linting (ruff) and type checking (mypy)
 - Executes test suite with coverage
 - Uploads coverage to Codecov

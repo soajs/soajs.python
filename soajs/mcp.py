@@ -11,13 +11,13 @@ import json
 import os
 import threading
 import time
-from typing import Any, Callable, Optional, Union
+from collections.abc import Callable
+from typing import Any, Optional
 
 MCP_TOOLS_PATH = "/mcp/tools"
 DEFAULT_SWAGGER_FILENAME = "/swagger.yml"
 
-# a runtime alias: X | Y here would fail on Python 3.9
-SwaggerDocument = Union[dict[str, Any], Callable[[], dict[str, Any]]]  # noqa: UP007
+SwaggerDocument = dict[str, Any] | Callable[[], dict[str, Any]]
 
 
 def load_swagger(
